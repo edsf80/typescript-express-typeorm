@@ -6,15 +6,21 @@ import { getConnection } from 'typeorm';
 
 const router = express.Router();
 
-router.get('/', async (_req, res) => {
+router.get('/', async (req, res) => {
   const controller = new Controller<User>(getConnection().getCustomRepository(UserRepository));
   const response = await controller.findAll();
   return res.send(response);
 });
 
-router.post('/', async(_req, res) => {
+router.get('/:id', async (req, res) => {
+  const controller = new Controller<User>(getConnection().getCustomRepository(UserRepository));
+  const response = await controller.findById(Number(req.params.id));
+  return res.send(response);
+});
+
+router.post('/', async(req, res) => {
     const controller = new Controller<User>(getConnection().getCustomRepository(UserRepository));
-    const response = await controller.save(_req.body);
+    const response = await controller.save(req.body);
     return res.send(response);
 });
 

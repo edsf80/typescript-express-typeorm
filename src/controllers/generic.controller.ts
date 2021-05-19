@@ -12,4 +12,8 @@ export default class Controller<T> {
     public async save(body: T): Promise<T> {
         return this.repository.save(body);
     }
+
+    public async findById(id: number): Promise<T | undefined> {
+        return this.repository.findOne(id);
+    }
 }
