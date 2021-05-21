@@ -3,19 +3,21 @@ import BaseController from "./base.controller";
 import { getConnection } from 'typeorm';
 import { PostRepository } from '../repositories/post.repository';
 import { UserRepository } from '../repositories/user.repository';
-import PostDto from "../dtos/post.dto";
-import { UserDto } from "../dtos/user.dto";
+import { body } from 'express-validator';
 
-export class PostController extends BaseController<Post, PostDto> {
+export class PostController extends BaseController<Post> {
 
     constructor(public path: string) {
-        super(path, getConnection().getCustomRepository(PostRepository), PostDto);
+        super(path, getConnection().getCustomRepository(PostRepository), []);
     }
 }
 
-export class UserController extends BaseController<User, UserDto> {
+export class UserController extends BaseController<User> {
 
     constructor(public path: string) {
-        super(path, getConnection().getCustomRepository(UserRepository), UserDto);
-    }
+        super(path, getConnection().getCustomRepository(UserRepository), [
+            body('email')
+                .isEmail()
+                .withMessage('Please enter a valid email.')]);
+    }    
 }
