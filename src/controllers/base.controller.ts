@@ -1,16 +1,17 @@
 import { ObjectType, Repository } from 'typeorm';
 import { Router, Request, Response, NextFunction } from 'express';
-import { getConnection } from 'typeorm';
 import HttpException from '../exceptions/http.exception';
+import Controller from './interface.controller';
+import validationMiddleware from '../middleware/validation.middleware';
 
-export default class BaseController<T> {
+export default class BaseController<T, K> implements Controller {
 
     private repository: Repository<T>;
 
-    public router = Router();
+    public router = Router();    
 
-    constructor(public path: string, type: ObjectType<Repository<T>>) {
-        this.repository = getConnection().getCustomRepository(type);        
+    constructor(public path: string, repo: Repository<T>, private type: ObjectType<K>) {
+        this.repository = repo;
         this.initializeRoutes();
     }
 
@@ -54,11 +55,11 @@ export default class BaseController<T> {
         }
     }
 
-    public initializeRoutes() {
+    private initializeRoutes() {
         this.router.get(this.path, this.findAll);
         this.router.get(`${this.path}/:id`, this.findById);
-        this.router.post(this.path, this.save);
-        this.router.put(`${this.path}/:id`, this.update);
+        this.router.post(this.path, validationMiddleware(this.type, true), this.save);
+        this.router.patch(`${this.path}/:id`, validationMiddleware(this.type, true), this.update);
         this.router.delete(`${this.path}/:id`, this.delete);
     }
 }

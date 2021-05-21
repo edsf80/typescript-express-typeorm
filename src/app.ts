@@ -1,6 +1,7 @@
 import express from 'express';
 import Controller from './controllers/interface.controller';
 import morgan from 'morgan';
+import errorMiddleware from './middleware/error.middleware';
 
 class App {
     public app: express.Application;
@@ -22,6 +23,7 @@ class App {
         this.app.use(express.json());
         this.app.use(express.static('dist'));
         this.app.use(morgan('tiny'));
+        this.app.use(errorMiddleware);
     }
 
     private initializeControllers(controllers: Controller[]) {
