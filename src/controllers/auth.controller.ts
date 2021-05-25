@@ -60,10 +60,10 @@ class AuthController implements Controller {
 
     private createToken(user: User): TokenData {
         const expiresIn = 60 * 60; // an hour
-        const secret = process.env.JWT_SECRET;
+        const secret: string = process.env.JWT_SECRET ? process.env.JWT_SECRET : '';
         return {
           expiresIn,
-          token: jwt.sign({id: user.id}, '', { expiresIn }),
+          token: jwt.sign({id: user.id}, secret, { expiresIn }),
         };
     }
 

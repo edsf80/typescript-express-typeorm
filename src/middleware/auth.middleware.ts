@@ -9,9 +9,9 @@ import HttpException from '../exceptions/http.exception';
 async function authMiddleware(request: RequestWithUser, response: Response, next: NextFunction) {
   const cookies = request.cookies;
   if (cookies && cookies.Authorization) {
-    const secret = process.env.JWT_SECRET;
+    const secret = process.env.JWT_SECRET ? process.env.JWT_SECRET : '';
     try {
-      const verificationResponse = jwt.verify(cookies.Authorization, '') as { _id: number };
+      const verificationResponse = jwt.verify(cookies.Authorization, secret) as { _id: number };
       const id = verificationResponse._id;
       const repository = getConnection().getCustomRepository(UserRepository);
       const user = await repository.findOne(id);
