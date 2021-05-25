@@ -1,4 +1,5 @@
 import express from 'express';
+import cookieParser from 'cookie-parser';
 import Controller from './controllers/interface.controller';
 import morgan from 'morgan';
 import errorMiddleware from './middleware/error.middleware';
@@ -21,6 +22,7 @@ class App {
 
     private initializeMiddlewares() {
         this.app.use(express.json());
+        this.app.use(cookieParser());
         this.app.use(express.static('dist'));
         this.app.use(morgan('tiny'));
         this.app.use(errorMiddleware);

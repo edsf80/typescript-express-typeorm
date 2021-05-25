@@ -3,11 +3,11 @@ import { Router, Request, Response, NextFunction } from 'express';
 import HttpException from '../exceptions/http.exception';
 import Controller from './interface.controller';
 import { ValidationChain, validationResult } from 'express-validator';
-import express from 'express';
+import authMiddleware from '../middleware/auth.middleware';
 
 export default class BaseController<T> implements Controller {
 
-    public router = Router();    
+    public router = Router();
 
     constructor(public path: string, protected repository: Repository<T>, protected validators: ValidationChain[]) {
         this.initializeRoutes();
@@ -17,7 +17,7 @@ export default class BaseController<T> implements Controller {
         return this.repository;
     }
 
-    protected findAll =  async (req: Request, res: Response) => {
+    protected findAll = async (req: Request, res: Response) => {
         const data = await this.repository.find();
         res.send(data);
     }
@@ -34,7 +34,7 @@ export default class BaseController<T> implements Controller {
             res.send(value)
         } else {
             next(new HttpException(404, `Resource id ${id} not found.`));
-        }        
+        }
     }
 
     protected update = async (req: Request, res: Response, next: NextFunction) => {
@@ -56,7 +56,7 @@ export default class BaseController<T> implements Controller {
             next(new HttpException(404, `Resource id ${id} not found.`));
         }
     }
-    
+
     protected validate = (req: Request, res: Response, next: NextFunction) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -67,10 +67,10 @@ export default class BaseController<T> implements Controller {
     }
 
     protected initializeRoutes() {
-        this.router.get(this.path, this.findAll);
-        this.router.get(`${this.path}/:id`, this.findById);
-        this.router.post(this.path, this.validators, this.validate, this.save);
-        this.router.patch(`${this.path}/:id`, this.validators, this.validate, this.update);
-        this.router.delete(`${this.path}/:id`, this.delete);
+        this.router.get(this.path, authMiddleware, this.findAll);
+        this.router.get(`${this.path}/:id`, authMiddleware, this.findById);
+        this.router.post(this.path, authMiddleware, this.validators, this.validate, this.save);
+        this.router.patch(`${this.path}/:id`, authMiddleware, this.validators, this.validate, this.update);
+        this.router.delete(`${this.path}/:id`, authMiddleware, this.delete);
     }
 }
