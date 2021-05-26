@@ -49,6 +49,7 @@ class AuthController implements Controller {
                 .trim()
                 .isLength({ min: 5 })
         ], validate, this.register);
+        this.router.post(`${this.path}/logout`, this.logout);
     }
 
     private login = async (req: Request, res: Response, next: NextFunction) => {
@@ -66,6 +67,11 @@ class AuthController implements Controller {
         } else {
 
         }
+    }
+
+    private logout = (req: Request, res: Response) => {
+        res.setHeader('Set-Cookie',['Authorization=;Max-age=0']);
+        res.send(200);
     }
 
     private register = async (req: Request, res: Response, next: NextFunction) => {
