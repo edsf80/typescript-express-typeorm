@@ -12,6 +12,7 @@ class App {
         
         this.initializeMiddlewares();
         this.initializeControllers(controllers);
+        this.initializeErrorHandlers();
     }
 
     public listen() {
@@ -21,10 +22,13 @@ class App {
     }
 
     private initializeMiddlewares() {
-        this.app.use(express.json());
+        this.app.use(express.json());        
         this.app.use(cookieParser());
         this.app.use(express.static('dist'));
-        this.app.use(morgan('tiny'));
+        this.app.use(morgan('tiny'));        
+    }
+
+    private initializeErrorHandlers() {
         this.app.use(errorMiddleware);
     }
 

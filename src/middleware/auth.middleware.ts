@@ -9,7 +9,7 @@ import HttpException from '../exceptions/http.exception';
 async function authMiddleware(request: RequestWithUser, response: Response, next: NextFunction) {
   const cookies = request.cookies;
   if (cookies && cookies.Authorization) {
-    const secret = process.env.JWT_SECRET ? process.env.JWT_SECRET : '';
+    const secret = process.env.JWT_SECRET || '';
     try {
       const verificationResponse = jwt.verify(cookies.Authorization, secret) as { _id: number };
       const id = verificationResponse._id;
@@ -19,13 +19,13 @@ async function authMiddleware(request: RequestWithUser, response: Response, next
         request.user = user;
         next();
       } else {
-        next(new HttpException(400, 'Failed to verify user credentials.'));
+        next(new HttpException('Failed to verify user credentials.', 400));
       }
     } catch (error) {
-      next(new HttpException(500, 'Failed to verify user credentials.'));
+      next(new HttpException('Failed to verify user credentials.', 500));
     }
   } else {
-    next(new HttpException(400, 'Failed to verify user credentials.'));
+    next(new HttpException('Failed to verify user credentials.', 400));
   }
 }
 

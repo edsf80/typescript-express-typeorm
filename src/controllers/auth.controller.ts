@@ -1,12 +1,13 @@
 import Controller from './interface.controller';
-import { Router, Request, Response, NextFunction, response } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { UserRepository } from '../repositories/user.repository';
 import { getConnection } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 import { body } from 'express-validator';
-import { validationResult } from 'express-validator';
 import { User } from '../models';
+import HttpException from '../exceptions/http.exception';
+import validate from '../middleware/validation.middleware';
 
 interface TokenData {
     token: string;
@@ -31,7 +32,23 @@ class AuthController implements Controller {
             .normalizeEmail(),
         body('password')
             .trim()
-            .isLength({ min: 5 })], this.validate, this.login);
+            .isLength({ min: 5 })], validate, this.login);
+        this.router.post(`${this.path}/register`, [
+            body('email')
+                .isEmail()
+                .withMessage('Please enter a valid email.'),
+            body('firstName')
+                .trim()
+                .not()
+                .isEmpty(),
+            body('lastName')
+                .trim()
+                .not()
+                .isEmpty(),
+            body('password')
+                .trim()
+                .isLength({ min: 5 })
+        ], validate, this.register);
     }
 
     private login = async (req: Request, res: Response, next: NextFunction) => {
@@ -51,19 +68,23 @@ class AuthController implements Controller {
         }
     }
 
-    private validate = (req: Request, res: Response) => {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }            
-    }
+    private register = async (req: Request, res: Response, next: NextFunction) => {
+        const user = await this.userRepository.findOne({ email: req.body.email });
+        if (user) {
+            next(new HttpException('User already exists.', 400));
+        } else {
+            const hashedPassword = await bcrypt.hash(req.body.password, 10);
+            const user = await this.userRepository.save({ ...req.body, password: hashedPassword });
+            res.send(user);
+        }
+    }    
 
     private createToken(user: User): TokenData {
         const expiresIn = 60 * 60; // an hour
-        const secret: string = process.env.JWT_SECRET ? process.env.JWT_SECRET : '';
+        const secret: string = process.env.JWT_SECRET || '';
         return {
-          expiresIn,
-          token: jwt.sign({id: user.id}, secret, { expiresIn }),
+            expiresIn,
+            token: jwt.sign({ id: user.id }, secret, { expiresIn }),
         };
     }
 

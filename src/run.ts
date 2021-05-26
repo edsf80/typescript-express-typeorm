@@ -1,8 +1,7 @@
 import App from './app'
 import { createConnection } from 'typeorm';
 import dbConfig from "./config/database";
-import { PostController } from './controllers/common.controller';
-import UserController from './controllers/user.controller';
+import { PostController, UserController } from './controllers/common.controller';
 import AuthController from './controllers/auth.controller';
 
 const PORT = process.env.PORT || 8000;

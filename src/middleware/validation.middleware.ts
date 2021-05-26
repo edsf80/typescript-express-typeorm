@@ -1,20 +1,13 @@
-import { plainToClass } from 'class-transformer';
-import { validate, ValidationError } from 'class-validator';
-import { RequestHandler } from 'express';
-import HttpException from '../exceptions/http.exception';
+import { validationResult } from 'express-validator';
+import { Request, Response, NextFunction } from 'express';
 
-function validationMiddleware<T>(type: any, skipMissingProperties = false): RequestHandler {
-    return (req, res, next) => {
-      validate(plainToClass(type, req.body), { skipMissingProperties })
-        .then((errors: ValidationError[]) => {
-          if (errors.length > 0) {
-            //const message = errors.map((error: ValidationError) => Object.values(error.constraints)).join(', ');
-            next(new HttpException(400, ''));
-          } else {
-            next();
-          }
-        });
-    };
+const validate = (req: Request, res: Response, next: NextFunction) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
   }
 
-export default validationMiddleware;
+  next();
+}
+
+export default validate;
